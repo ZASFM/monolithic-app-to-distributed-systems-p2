@@ -9,7 +9,7 @@ app.use(cors());
 //redirecting to shopping
 app.use('/shopping',proxy('http://localhost:8003'));
 //redirecting to customer 
-app.use('/customer',proxy('http://localhost:8003'));
+app.use('/customer',proxy('http://localhost:8001'));
 //redirecting to root layer (products)
 app.use('/',proxy('http://localhost:8002'));
 
