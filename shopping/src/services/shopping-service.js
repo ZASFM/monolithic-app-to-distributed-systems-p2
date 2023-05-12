@@ -7,6 +7,15 @@ class ShoppingService {
     this.repository = new ShoppingRepository();
   }
 
+  async GetCart(_id) {
+    try {
+      const cartItems = await this.repository.Cart(_id);
+      return FormateData(cartItems);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   async PlaceOrder(userInput) {
     const { _id, txnNumber } = userInput;
 
@@ -28,6 +37,13 @@ class ShoppingService {
       throw new APIError("Data Not found", err);
     }
   }
+
+  async ManageCart(customerId, item, qty, isRemove) {
+
+    const cartResult = await this.repository.AddCartItem(customerId, item, qty, isRemove);
+    return FormateData(cartResult);
+  }
+
 }
 
 module.exports = ShoppingService;
