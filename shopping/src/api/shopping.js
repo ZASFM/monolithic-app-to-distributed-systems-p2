@@ -1,9 +1,10 @@
 const ShoppingService = require("../services/shopping-service");
 const { PublishCustomerEvent, SubscribeMessage } = require("../utils");
 const  UserAuth = require('./middlewares/auth');
-const { CUSTOMER_SERVICE } = require('../config');
+const { CUSTOMER_BINDING_KEY } = require('../config');
 const { PublishMessage } = require('../utils')
 
+//FROM THIS SERVICE WE WILL BE BOTH PUBLISHING TO THE CUSTOMER SERVICE AND SUBSCRIBING TO THE PRODUCTS SERVICE MESSAGES
 module.exports = (app, channel) => {
     
     const service = new ShoppingService();
@@ -20,7 +21,7 @@ module.exports = (app, channel) => {
         const payload = await service.GetOrderPayload(_id, data, 'CREATE_ORDER')
 
         // PublishCustomerEvent(payload)
-        PublishMessage(channel,CUSTOMER_SERVICE, JSON.stringify(payload))
+        PublishMessage(channel,CUSTOMER_BINDING_KEY, JSON.stringify(payload))
 
         res.status(200).json(data);
 
