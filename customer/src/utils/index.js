@@ -74,6 +74,8 @@ module.exports.SubscribeMessage=async(channel,service)=>{
    channel.consume(appQueue.queue,data=>{
      console.log('data recieved');
      console.log(data.content.toString());
+     //since im not using /app-event to trigger the function that saves data inside the customer model, im triggering that function right here:
+     service.SubscribeEvents(data.content.toString());
      channel.ack(data);
    })
  }catch(err){

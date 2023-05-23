@@ -48,6 +48,9 @@ class ShoppingService {
   }
 
   async SubscribeEvents(payload){
+
+    //parsing because when I publish i do it this way: service.SubscribeEvents(data.content.toString());
+    payload=JSON.parse(payload);
  
     const { event, data } =  payload;
 
