@@ -1,4 +1,4 @@
-describe('ProductService',()=>{
+describe('ProductServices',()=>{
    
    describe('Create product',()=>{
       test('validate user inputs',()=>{});
