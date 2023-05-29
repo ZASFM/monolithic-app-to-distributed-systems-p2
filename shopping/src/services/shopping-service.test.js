@@ -1,4 +1,4 @@
-describe('ShoppingService',()=>{
+describe('ShoppingServices',()=>{
    
    describe('Creates order',()=>{
       test('validate user inputs',()=>{});
