@@ -14,7 +14,7 @@ module.exports = async (app,channel) => {
     //listen to events:
     //appEvents(app);
     //api
-    customer(app.channel);
+    customer(app,channel);
 
     // error handling
     app.use(HandleErrors);
