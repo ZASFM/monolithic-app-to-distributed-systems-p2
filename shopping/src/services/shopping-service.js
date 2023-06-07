@@ -10,20 +10,23 @@ class ShoppingService {
 
   //cart
 
-  async AddToCartItem(customerId,product_id,qty){
+  async AddToCartItem(customerId, product_id, qty) {
     //grab product details from product service through rpc
-    
-    const cartResponse={};
-    try{
-       if(cartResponse && cartResponse._id){
 
-       }
-    }catch(err){
+    const cartResponse = {};
+    try {
+      if (cartResponse && cartResponse._id) {
+         const data=await this.repository.ManageCart(customerId,product,qty);
+         return data;
+      }
+    } catch (err) {
       throw new Error('Product data does not exists');
     }
   }
 
-  async RemoveCartItem(customerId, product_id){}
+  async RemoveCartItem(customerId, product_id) {
+     return this.repository.ManageCart(customerId,{_id:product_id},0,true); 
+  }
 
   async GetCart(_id) {
     try {
@@ -58,46 +61,46 @@ class ShoppingService {
   }
 
   async ManageCart(customerId, item, qty, isRemove) {
-    try{
+    try {
       const cartResult = await this.repository.AddCartItem(customerId, item, qty, isRemove);
       return FormateData(cartResult);
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
   }
 
-  async SubscribeEvents(payload){
+  async SubscribeEvents(payload) {
 
     //parsing because when I publish i do it this way: service.SubscribeEvents(data.content.toString());
-    payload=JSON.parse(payload);
- 
-    const { event, data } =  payload;
+    payload = JSON.parse(payload);
+
+    const { event, data } = payload;
 
     const { userId, product, qty } = data;
 
-    switch(event){
-        case 'ADD_TO_CART':
-            this.ManageCart(userId,product, qty, false);
-            break;
-        case 'REMOVE_FROM_CART':
-            this.ManageCart(userId,product,qty, true);
-            break;
-        default:
-            break;
+    switch (event) {
+      case 'ADD_TO_CART':
+        this.ManageCart(userId, product, qty, false);
+        break;
+      case 'REMOVE_FROM_CART':
+        this.ManageCart(userId, product, qty, true);
+        break;
+      default:
+        break;
     }
 
   }
 
-  async GetOrderPayload(userId,order,event){
-    if(order){
-       const payload={
-         event,
-         data:{userId,order}
-       }
-       return FormateData(payload);
+  async GetOrderPayload(userId, order, event) {
+    if (order) {
+      const payload = {
+        event,
+        data: { userId, order }
+      }
+      return FormateData(payload);
     }
-    return FormateData({message:'Error order available'})
- }
+    return FormateData({ message: 'Error order available' })
+  }
 
 }
 
