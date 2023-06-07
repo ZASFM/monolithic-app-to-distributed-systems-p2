@@ -55,7 +55,8 @@ module.exports = (app, channel) => {
     return res.status(200).json(products);
   });
 
-  app.put("/wishlist", UserAuth, async (req, res, next) => {
+  //not required
+ /*  app.put("/wishlist", UserAuth, async (req, res, next) => {
     const { _id } = req.user;
 
     const { data } = await service.GetProductPayload(
@@ -125,7 +126,7 @@ module.exports = (app, channel) => {
     const response = { product: data.data.product, unit: data.data.qty };
 
     res.status(200).json(response);
-  });
+  }); */
 
   app.get("/whoami", (req, res, next) => {
     return res
