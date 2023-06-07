@@ -9,6 +9,7 @@ module.exports = (app, channel) => {
     
     const service = new ShoppingService();
 
+    //subscribing yo me customer service and listenning from messages
     SubscribeMessage(channel, service)
 
     app.post('/order',UserAuth, async (req,res,next) => {
@@ -37,11 +38,13 @@ module.exports = (app, channel) => {
 
     });
 
-    app.put('/cart',UserAuth, async (req,res,next) => {
+    app.post('/cart',UserAuth, async (req,res,next) => {
 
         const { _id } = req.user;
 
-        const { data } = await service.AddToCart(_id, req.body._id);
+        const {product_id,qty}=req.body;
+
+        const { data } = await service.AddToCartItem(_id,product_id,qty);
         
         res.status(200).json(data);
 
@@ -51,8 +54,9 @@ module.exports = (app, channel) => {
 
         const { _id } = req.user;
 
+        const product_id=req.params.id;
 
-        const { data } = await service.AddToCart(_id, req.body._id);
+        const { data } = await service.RemoveCartItem(_id, product_id);
         
         res.status(200).json(data);
 
@@ -62,7 +66,7 @@ module.exports = (app, channel) => {
 
         const { _id } = req.user;
         
-        const { data } = await service.GetCart({ _id });
+        const data  = await service.GetCart( _id );
 
         return res.status(200).json(data);
     });
