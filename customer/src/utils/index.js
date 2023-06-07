@@ -64,7 +64,10 @@ module.exports.CreateChannel=async()=>{
   }
 }
 
-//this service does not need to publish to other services, only get data, for them with the binding_key
+module.exports.PublishMessage = (channel, service, msg) => {
+  channel.publish(EXCHANGE_NAME, service, Buffer.from(msg));
+  console.log("Sent: ", msg);
+};
 
 //subscribe message:
 module.exports.SubscribeMessage=async(channel,service)=>{

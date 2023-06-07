@@ -85,7 +85,25 @@ class CustomerService {
         }
     }
 
-    async GetShopingDetails(id){
+    async DeleteProfile(userId){
+        try{
+           const data=await this.repository.DeleteProfile(userId);
+           const payload={
+              event:'DELETE PROFILE',
+              data
+           }
+           return {
+               data,
+               payload
+           }
+        }catch(err){
+
+        }
+    }
+
+    //these functions wont be necessary since these will be handled inside my shopping serice:
+
+  /*   async GetShopingDetails(id){
 
         try {
             const existingCustomer = await this.repository.FindCustomerById({id});
@@ -138,6 +156,7 @@ class CustomerService {
         }
     }
 
+    //inside my customer service im only publishing and not subscribing
     async SubscribeEvents(payload){
 
         payload=JSON.parse(payload);
@@ -164,7 +183,7 @@ class CustomerService {
                 break;
         }
  
-    }
+    } */
 
 }
 

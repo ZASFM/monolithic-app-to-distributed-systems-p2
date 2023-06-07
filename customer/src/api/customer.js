@@ -1,11 +1,13 @@
-const CustomerService = require("../services-service");
+const CustomerService = require("../services/customer-service");
 const UserAuth = require("./middlewares/auth");
-const {}=require('../config/index');
-const { SubscribeMessage } = require("../utils");
+const { SHOPPING_SERVICE }=require('../config/index');
+const { SubscribeMessage, PublishMessage } = require("../utils");
 
 module.exports = (app,channel) => {
   const service = new CustomerService();
-  SubscribeMessage(channel,service);
+
+  //my customer services is only publishing an event not subscribing
+  //SubscribeMessage(channel,service);
 
   app.post("/signup", async (req, res, next) => {
     try {
@@ -58,7 +60,21 @@ module.exports = (app,channel) => {
     }
   });
 
-  app.get("/shoping-details", UserAuth, async (req, res, next) => {
+  //when deleting pfofile communicating to the shopping service that some user has deleted its profile:
+  app.delete("/profile", UserAuth, async (req, res, next) => {
+    try {
+      const { _id } = req.user;
+      const { data,payload } = await service.DeleteProfile( _id );
+      //upon deleting me account message the shopping service about the account delete and the event theat triggered
+      PublishMessage(channel,SHOPPING_SERVICE, JSON.stringify(payload));
+      return res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  //these two routes wont be necesary for this services, will store them inside the shopping servicee
+/*   app.get("/shoping-details", UserAuth, async (req, res, next) => {
     try {
       const { _id } = req.user;
       const { data } = await service.GetShopingDetails(_id);
@@ -77,5 +93,5 @@ module.exports = (app,channel) => {
     } catch (err) {
       next(err);
     }
-  });
+  }); */
 };

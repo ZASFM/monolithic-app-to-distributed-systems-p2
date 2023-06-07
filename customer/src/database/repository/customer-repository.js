@@ -80,7 +80,12 @@ class CustomerRepository {
     }
   }
 
-  async Wishlist(customerId) {
+  async DeleteProfile(id){
+      return await CustomerModel.findByIdAndDelete(id)
+  }
+
+  //thse functions wll be handled inside my shoppping serivce:
+  /* async Wishlist(customerId) {
     try {
       const profile = await CustomerModel.findById(customerId).populate(
         "wishlist"
@@ -226,7 +231,7 @@ class CustomerRepository {
         "Unable to Create Customer"
       );
     }
-  }
+  } */
 }
 
 module.exports = CustomerRepository;
