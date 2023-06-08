@@ -38,6 +38,20 @@ class ShoppingService {
     }
   }
 
+  //wishlist
+
+  async AddToWishlist(customer_id,product_id){
+    return this.repository.ManageWishlist(customer_id, product_id);
+  }
+
+  async GetWishList(customer_id,){
+
+  }
+
+  async RemoveFromWishlist(customer_id,product_id){
+    return this.repository.ManageWishlist(customer_id, product_id);
+  }
+
   //orders
 
   async PlaceOrder(userInput) {

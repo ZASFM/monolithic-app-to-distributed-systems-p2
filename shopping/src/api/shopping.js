@@ -12,6 +12,7 @@ module.exports = (app, channel) => {
     //subscribing yo me customer service and listenning from messages
     SubscribeMessage(channel, service)
 
+    //orders
     app.post('/order',UserAuth, async (req,res,next) => {
 
         const { _id } = req.user;
@@ -38,6 +39,7 @@ module.exports = (app, channel) => {
 
     });
 
+    //cart
     app.post('/cart',UserAuth, async (req,res,next) => {
 
         const { _id } = req.user;
@@ -70,6 +72,30 @@ module.exports = (app, channel) => {
 
         return res.status(200).json(data);
     });
+
+    //wishlist
+    app.post('/wishlist', UserAuth, async (req,res,next) => {
+        const {_id}=req.user;
+        const {product_id}=req.body;
+
+        const data=await service.AddToWishlist(_id, product_id);
+        return res.status(200).json(data);
+    })
+
+    app.delete('/wishlist/:id', UserAuth, async (req,res,next) => {
+        const {_id}=req.user;
+        const product_id=req.params.id
+        const data=await service.RemoveFromWishlist(_id,product_id);
+        return res.status(200).json(data);
+    })
+
+    app.get('/wishlist', UserAuth, async (req,res,next) => {
+        const {_id}=req.user;
+ 
+        const data=await service.GetWishList(_id);
+        return res.status(200).json(data);
+    })
+
 
     app.get('/whoami', (req,res,next) => {
         return res.status(200).json({msg: '/shoping : I am Shopping Service'})

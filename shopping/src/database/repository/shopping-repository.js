@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { OrderModel, CartModel } = require('../models');
+const { OrderModel, CartModel, WishlistModel } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const _ = require('lodash');
 
@@ -45,6 +45,35 @@ class ShoppingRepository {
             return await CartModel.create({
                 customerId,
                 items: [{ product: { ...product }, unit: qty }]
+            })
+        }
+    }
+
+    async ManageWishlist(customerId, product_id, isRemove=false) {
+        const wishlist = await WishlistModel.findOne({ customerId });
+
+        //if wishlist exists perform nested elseif case, otherwise create a wishlist
+        if (wishlist) {
+            if (isRemove) {
+                //if we want to remove product fro wishlist
+                //deleting the item from my cart where the id is equal to the product id
+               const wishlistItems=_.filter(wishlist.products,(item)=>item.product._id!==product._id);
+               wishlist.items=wishlistItems;
+            } else {
+                //id we want to add products to the wishlist, checking if the wishlist with a certain customer id does or does not have the current product to add to the wishlist
+                //finding the index if the product that i want to modify inside the items, cart.items is an array full of product objects
+                const wishlistIndex = _.findIndex(wishlist.items, {
+                    products: { _id: product._id }
+                });
+                if (cartIndex < 0) {
+                    wishlist.products.push({_id:product_id});
+                }
+                return await wishlist.save();
+            }
+        } else {
+            return await WishlistModel.create({
+                customerId,
+                products: [{_id:product_id}]
             })
         }
     }
