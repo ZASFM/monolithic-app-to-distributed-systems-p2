@@ -2,9 +2,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const axios=require('axios');
 const amqplib=require('amqplib');
+const { v4: uuid4 } = require('uuid');
+
 
 const { APP_SECRET,MESSAGE_BROKER_URL,EXCHANGE_NAME, SHOPPING_BINDING_KEY, QUEUE_NAME } = require("../config");
 
+let amqplibConnection = null;
 //Utility functions
 module.exports.GenerateSalt = async () => {
   return await bcrypt.genSalt();
@@ -60,10 +63,17 @@ module.exports.FormateData = (data) => {
 //message broker:
 //messsage broker:
 //creating a channel
+
+const getChannel = async () => {
+  if (amqplibConnection === null) {
+     amqplibConnection = await amqplib.connect(MESSAGE_BROKER_URL);
+  }
+  return await amqplibConnection.createChannel();
+}
+
 module.exports.CreateChannel=async()=>{
   try{
-     const connection=await amqplib.connect(MESSAGE_BROKER_URL);
-     const channel=await connection.createChannel();
+     const channel=await getChannel();
      await channel.assertExchange(EXCHANGE_NAME,'direct',false);
      return channel;
   }catch(err){
@@ -96,3 +106,79 @@ module.exports.SubscribeMessage=async(channel,service)=>{
  }
 }
 
+//not required since this service is only gonna make rpc requests to the products service and wont respond to an calls
+//if we recieved any rpc call it will monitor it and send back some data
+/* const RPCObserver = async (RPC_QUEUE_NAME, fakeResponse) => {
+  const channel = await getChannel();
+  //once its delivered it will go away
+  await channel.assertQueue(RPC_QUEUE_NAME, {
+     durable: false
+  });
+  //number of unawknowledged messages
+  channel.prefetch(1);
+  //any message that comes by the queue name, it will trigger the async function
+  channel.consume(RPC_QUEUE_NAME, async (msg) => {
+     if (msg.content) {
+        //DB operation
+        const payload = JSON.parse(msg.content.toString());
+        const response = { fakeResponse, payload }//call fake db operation
+        //sending back some response, to a specific call and queue that gets defined by the correlation id
+        channel.sendToQueue(
+           msg.properties.replayTo,
+           Buffer.from(JSON.stringify(response)),
+           {
+              correlation: msg.properties.correlationId
+           }
+        )
+        channel.ack(msg)
+     }
+  },
+     {
+        noAck: false
+     }
+  )
+} */
+
+const requestData = async (queue_name, payload, id) => {
+  const channel = getChannel();
+  //I want exclusivly this channel to recieve the incoming data:
+  const q = await channel.assertQueue('', { exclusive: false });
+
+  //sending it to the queue name
+  channel.sentToQueue(queue_name, JSON.stringify(payload), {
+     replayTo: q.queue,
+     correlationId: id
+  });
+
+  //checking if we are able to reviebe the response
+  return new Promise((resolve, reject) => {
+     //closing channel after 8 seconds:
+     const timeout = setTimeout(() => {
+        channel.close();
+     }, 8000)
+     //we have already sent to request, now we are waiting for the response with .consume
+     channel.consume(q.queue, (msg) => {
+        if (msg.correlationId === id) {
+           resolve(JSON.parse(msg.content.toString()));
+           //clearing timeout if im getting back a response
+           clearTimeout(timeout);
+        } else {
+           reject('Message not found');
+        }
+     }, {
+        noAck: true
+     })
+  })
+}
+
+//send request to other services:
+module.exports.RPCRequest = async (RPC_QUEUE_NAME, payload) => {
+  const uuid = uuid4()//correlationId, every request has a unique one
+  return requestData(RPC_QUEUE_NAME, payload, uuid)
+}
+
+module.exports = {
+  getChannel,
+  RPCObserver,
+  RPCRequest
+}
