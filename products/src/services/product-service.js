@@ -86,6 +86,22 @@ class ProductService {
        }
        return FormateData({message:'Error no product'})
     }
+
+    //product service awaits a payload from shopping requesting something and will trigger some function acording to the type:
+    async serveRPCRequest(payload){
+        const {data,type}=payload;
+
+        switch(type){
+            case 'VIEW PRODUCT':
+               return this.repository.FindById(data);
+               break;
+            case 'VIEW PRODUCTS':
+                return this.repository.FindSelectedProducts(data);
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 module.exports = ProductService;

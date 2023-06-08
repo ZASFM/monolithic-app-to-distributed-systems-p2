@@ -6,9 +6,12 @@ const {
   PublishMessage,
 } = require("../utils");
 const UserAuth = require("./middlewares/auth");
+const {RPCObserver}=require('../utils/index');
 
 module.exports = (app, channel) => {
   const service = new ProductService();
+
+  RPCObserver('PRODUCTS_SERVICE',service);
 
   app.post("/product/create", async (req, res, next) => {
     const { name, desc, type, unit, price, available, suplier, banner } =

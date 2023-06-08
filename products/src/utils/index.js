@@ -4,7 +4,7 @@ const axios=require('axios');
 const amqplib=require('amqplib');
 const { v4: uuid4 } = require('uuid');
 
-const { APP_SECRET,MESSAGE_BROKER_URL,EXCHANGE_NAME,SHOPPING_BINDING_KEY,CUSTOMER_BINDING_KEY } = require("../config");
+const { APP_SECRET,MESSAGE_BROKER_URL,EXCHANGE_NAME,SHOPPING_BINDING_KEY,CUSTOMER_BINDING_KEY, AMPQ_CONNECTION_STRING } = require("../config");
 
 //Utility functions
 module.exports.GenerateSalt = async () => {
@@ -65,10 +65,19 @@ module.exports.PublishShoppingEvent=async(payload)=>{
 
 //messsage broker:
 //creating a channel
+
+let amqplibConnection = null;
+
+const getChannel = async () => {
+   if (amqplibConnection === null) {
+      amqplibConnection = await amqplib.connect(AMPQ_CONNECTION_STRING);
+   }
+   return await amqplibConnection.createChannel();
+}
+
 module.exports.CreateChannel=async()=>{
    try{
-      const connection=await amqplib.connect(MESSAGE_BROKER_URL);
-      const channel=await connection.createChannel();
+      const channel=await getChannel();
       await channel.assertExchange(EXCHANGE_NAME,'direct',false);
       return channel;
    }catch(err){
@@ -101,17 +110,8 @@ module.exports.SubscribeMessage=async(channel,service,binding_key)=>{
 }
 
 //gRPC communication with shopping service:
-let amqplibConnection = null;
-
-const getChannel = async () => {
-   if (amqplibConnection === null) {
-      amqplibConnection = await amqplib.connect();
-   }
-   return await amqplibConnection.createChannel();
-}
-
 //if we recieved any rpc call it will monitor it and send back some data
-const RPCObserver = async (RPC_QUEUE_NAME, fakeResponse) => {
+module.exports.RPCObserver = async (RPC_QUEUE_NAME, service) => {
    const channel = await getChannel();
    //once its delivered it will go away
    await channel.assertQueue(RPC_QUEUE_NAME, {
@@ -124,7 +124,7 @@ const RPCObserver = async (RPC_QUEUE_NAME, fakeResponse) => {
       if (msg.content) {
          //DB operation
          const payload = JSON.parse(msg.content.toString());
-         const response = { fakeResponse, payload }//call fake db operation
+         const response = await service.serveRPCRequest(payload)//call fake db operation
          //sending back some response, to a specific call and queue that gets defined by the correlation id
          channel.sendToQueue(
             msg.properties.replayTo,
@@ -142,7 +142,8 @@ const RPCObserver = async (RPC_QUEUE_NAME, fakeResponse) => {
    )
 }
 
-const requestData = async (queue_name, payload, id) => {
+//this service does not need to look for rpc calls:
+/* const requestData = async (queue_name, payload, id) => {
    const channel = getChannel();
    //I want exclusivly this channel to recieve the incoming data:
    const q = await channel.assertQueue('', { exclusive: false });
@@ -178,7 +179,7 @@ const requestData = async (queue_name, payload, id) => {
 const RPCRequest = async (RPC_QUEUE_NAME, payload) => {
    const uuid = uuid4()//correlationId, every request has a unique one
    return requestData(RPC_QUEUE_NAME, payload, uuid)
-}
+} */
 
 module.exports = {
    getChannel,
