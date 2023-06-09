@@ -12,14 +12,14 @@ class ShoppingService {
 
   async AddToCartItem(customerId, product_id, qty) {
     //grab product details from product service through rpc
-    const cartResponse = await RPCRequest('PRODUCTS_RPC',{
-      type:'VIEW PRODUCT',
-      data:product_id
+    const cartResponse = await RPCRequest('PRODUCTS_RPC', {
+      type: 'VIEW PRODUCT',
+      data: product_id
     })
     try {
       if (cartResponse && cartResponse._id) {
-         const data=await this.repository.ManageCart(customerId,product,qty);
-         return data;
+        const data = await this.repository.ManageCart(customerId, product, qty);
+        return data;
       }
     } catch (err) {
       throw new Error('Product data does not exists');
@@ -27,7 +27,7 @@ class ShoppingService {
   }
 
   async RemoveCartItem(customerId, product_id) {
-     return this.repository.ManageCart(customerId,{_id:product_id},0,true); 
+    return this.repository.ManageCart(customerId, { _id: product_id }, 0, true);
   }
 
   async GetCart(_id) {
@@ -40,15 +40,29 @@ class ShoppingService {
 
   //wishlist
 
-  async AddToWishlist(customer_id,product_id){
+  async AddToWishlist(customer_id, product_id) {
     return this.repository.ManageWishlist(customer_id, product_id);
   }
 
-  async GetWishList(customer_id,){
+  async GetWishList(customer_id,) {
+    //perform rpc call to get product details before deliver to the client
+    const { products } = await this.repository.GetWishlistByCustomerId(customer_id);
+    if (Array.isArray(products)) {
+      const ids = products.map(product => product._id);
 
+      const productResponse = await RPCRequest('PRODUCT_SERVICE', {
+        type: 'VIEW PRODUCTS',
+        data: ids
+      });
+
+      if (productResponse) {
+        return productResponse;
+      }
+    }
+    return {};
   }
 
-  async RemoveFromWishlist(customer_id,product_id){
+  async RemoveFromWishlist(customer_id, product_id) {
     return this.repository.ManageWishlist(customer_id, product_id);
   }
 

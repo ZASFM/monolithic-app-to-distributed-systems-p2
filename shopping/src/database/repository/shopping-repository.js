@@ -123,6 +123,9 @@ class ShoppingRepository {
         return {}
     }
 
+    async GetWishlistByCustomerId(customerId){
+       return WishlistModel.findOne({customerId})
+    }
 }
 
 module.exports = ShoppingRepository;
