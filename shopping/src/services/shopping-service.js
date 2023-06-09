@@ -68,12 +68,12 @@ class ShoppingService {
 
   //orders
 
-  async createOrder(_id,txnNumber) {
+  async createOrder(_id, txnNumber) {
 
     // Verify the txn number with payment logs
 
     try {
-      return  await this.repository.CreateNewOrder(_id, txnNumber);
+      return await this.repository.CreateNewOrder(_id, txnNumber);
     } catch (err) {
       throw new APIError("Data Not found", err);
     }
@@ -81,7 +81,7 @@ class ShoppingService {
 
   async GetOrder(orderId) {
     try {
-      const orders = await this.repository.Orders('',orderId);
+      const orders = await this.repository.Orders('', orderId);
       return FormateData(orders);
     } catch (err) {
       throw new APIError("Data Not found", err);
@@ -90,7 +90,7 @@ class ShoppingService {
 
   async GetOrders(customerId) {
     try {
-      const orders = await this.repository.Orders(customerId,'');
+      const orders = await this.repository.Orders(customerId, '');
       return FormateData(orders);
     } catch (err) {
       throw new APIError("Data Not found", err);
@@ -128,16 +128,33 @@ class ShoppingService {
 
   }
 
-  async GetOrderPayload(userId, order, event) {
-    if (order) {
-      const payload = {
-        event,
-        data: { userId, order }
-      }
-      return FormateData(payload);
-    }
-    return FormateData({ message: 'Error order available' })
+  async deleteProfilesData(userId){
+    return await this.repository.deleteProfileData(userId);
   }
+
+  async SubscribeEvents(payload) {
+    payload = JSON.parse(payload);
+    const { type, data } = payload;
+    switch (type) {
+      case 'DELETE PROFILE':
+        await this.deleteProfilesData(data.userId);
+        break;
+      default:
+        break;
+    }
+  }
+
+
+  /*   async GetOrderPayload(userId, order, event) {
+      if (order) {
+        const payload = {
+          event,
+          data: { userId, order }
+        }
+        return FormateData(payload);
+      }
+      return FormateData({ message: 'Error order available' })
+    } */
 
 }
 

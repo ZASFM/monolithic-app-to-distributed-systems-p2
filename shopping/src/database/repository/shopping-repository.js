@@ -124,6 +124,13 @@ class ShoppingRepository {
         return {}
     }
 
+    async deleteProfileData(userId){
+        return Promise.all([
+            CartModel.findByIdAndDelete({userId}),
+            WishlistModel.findByIdAndDelete({userId})
+        ])
+    }
+
     async GetWishlistByCustomerId(customerId){
        return WishlistModel.findOne({customerId})
     }
