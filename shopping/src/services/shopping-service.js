@@ -68,14 +68,21 @@ class ShoppingService {
 
   //orders
 
-  async PlaceOrder(userInput) {
-    const { _id, txnNumber } = userInput;
+  async createOrder(_id,txnNumber) {
 
     // Verify the txn number with payment logs
 
     try {
-      const orderResult = await this.repository.CreateNewOrder(_id, txnNumber);
-      return FormateData(orderResult);
+      return  await this.repository.CreateNewOrder(_id, txnNumber);
+    } catch (err) {
+      throw new APIError("Data Not found", err);
+    }
+  }
+
+  async GetOrder(orderId) {
+    try {
+      const orders = await this.repository.Orders('',orderId);
+      return FormateData(orders);
     } catch (err) {
       throw new APIError("Data Not found", err);
     }
@@ -83,7 +90,7 @@ class ShoppingService {
 
   async GetOrders(customerId) {
     try {
-      const orders = await this.repository.Orders(customerId);
+      const orders = await this.repository.Orders(customerId,'');
       return FormateData(orders);
     } catch (err) {
       throw new APIError("Data Not found", err);

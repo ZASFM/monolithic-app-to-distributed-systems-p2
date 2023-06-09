@@ -6,12 +6,13 @@ const _ = require('lodash');
 //Dealing with data base operations
 class ShoppingRepository {
 
-    async Orders(customerId) {
-
-        const orders = await OrderModel.find({ customerId });
-
-        return orders;
-
+    async Orders(customerId, orderId) {
+        if(orderId){
+            const orders = await OrderModel.findOne({ _id:orderId });
+            return orders;
+        }else{
+           return await OrderModel.find({customerId});
+        } 
     }
 
     async Cart(customerId) {
