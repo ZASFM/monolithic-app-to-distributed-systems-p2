@@ -1,4 +1,5 @@
 <h1>Monolithic to distributed systems</h1>
+An e-commerce application to buy groceries and get the delivered to your location.
 
 <h3>Description</h3>
 This project is a transformation of a monolithic React app into a microservices-based application. The backend of the application was redesigned, introducing three microservices: customer, shopping, and products. The backend architecture follows a three-layered approach, consisting of the API layer for request validation, the service layer for business logic handling, and the repository layer for data operations. The project also includes a CI/CD pipeline that runs tests, deploys changes to a QA environment, and finally to AWS. Dockerization has been implemented to ensure consistency and ease of deployment.
@@ -50,3 +51,10 @@ Once the project is running, you can access the application through the provided
 
 <h3>Contributors</h3>
 Mohammad Dawood Nazer
+
+<h3>Monolithic application</h3>
+Wanna have a look of how the application was before the transformation?
+
+## Microservice version link:
+[Grocery Online Shopping App To Microservice](https://github.com/ZASFM/monolithic-app-to-distributed-systems-p1)
+
