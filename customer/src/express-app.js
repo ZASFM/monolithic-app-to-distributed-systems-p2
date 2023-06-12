@@ -1,8 +1,6 @@
 const express = require('express');
 const cors  = require('cors');
 const { customer, appEvents } = require('./api');
-const HandleErrors = require('./utils/error-handler')
-
 
 module.exports = async (app,channel) => {
 
@@ -16,7 +14,5 @@ module.exports = async (app,channel) => {
     //api
     customer(app,channel);
 
-    // error handling
-    app.use(HandleErrors);
-    
+    //error handling will happen from the index.js file
 }
